@@ -28,7 +28,7 @@ Sign/install it with your sideloading tool of choice.
 | **Offline** | Google Fonts → vendored Open Sans (`@fontsource/open-sans`); CSP restricted to the app's own origin; external Discord/Wiki/Reddit/test-site links removed; web view never navigates to http(s) links. The build fails if any network URL is left in `www/` (`scripts/check-offline.mjs`). |
 | **Saves** | The game saves to IndexedDB + localStorage. `native/tom-native.js` mirrors every localStorage write to native storage (`@capacitor/preferences` / UserDefaults). On launch, before the game starts, it restores from native storage when localStorage is missing or older (and drops the stale IndexedDB copy so the restored data is what loads). The game is also saved when the app goes to the background. |
 | **Export / Import** | Floating ⇅ button (bottom-right): *Export save* copies a `TOMSAVE1:` string to the clipboard, *Import save* reads it back from the clipboard. The game's own *Get Save* / *Hall Save* buttons copy their JSON to the clipboard (WKWebView can't download files). |
-| **Native feel** | Fullscreen (status bar + home indicator hidden), web view pinned to the safe area (notch / Dynamic Island / home indicator), no bounce scrolling, no zoom / callouts, portrait + landscape. On phones the desktop UI is laid out at 640 px (portrait) / 1024 px (landscape) and scaled to fit. |
+| **Native feel** | Fullscreen (status bar hidden), web view pinned to the safe area (notch / Dynamic Island / home indicator), no bounce scrolling, no zoom / callouts, portrait + landscape. On phones the desktop UI is laid out at 640 px (portrait) / 1024 px (landscape) and scaled to fit. |
 
 ## Layout
 

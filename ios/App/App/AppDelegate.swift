@@ -78,6 +78,7 @@ class MainViewController: CAPBridgeViewController {
         web.scrollView.contentInsetAdjustmentBehavior = .never
     }
 
+    // (prefersHomeIndicatorAutoHidden is sealed by Capacitor; the home
+    // indicator stays, but outside the web view's safe-area frame.)
     override var prefersStatusBarHidden: Bool { true }
-    override var prefersHomeIndicatorAutoHidden: Bool { true }
 }

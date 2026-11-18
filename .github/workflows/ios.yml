@@ -50,7 +50,8 @@ jobs:
 
       - name: Build App.app (no code signing)
         run: |
-          set -o pipefail
+          mkdir -p build
+          set +e
           xcodebuild \
             -project ios/App/App.xcodeproj \
             -scheme App \
@@ -63,8 +64,12 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             CURRENT_PROJECT_VERSION=${{ github.run_number }} \
-            build | tee build/xcodebuild.log | grep -E "error:|warning: .*Capacitor|\*\* BUILD" || true
-          test -d build/DerivedData/Build/Products/Release-iphoneos/App.app
+            build > build/xcodebuild.log 2>&1
+          status=$?
+          set -e
+          grep -E "error:|\*\* BUILD" build/xcodebuild.log || true
+          if [ $status -ne 0 ]; then tail -80 build/xcodebuild.log; exit $status; fi
+          test -f build/DerivedData/Build/Products/Release-iphoneos/App.app/Info.plist
 
       - name: Package .ipa (Payload/App.app)
         run: |
