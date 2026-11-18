@@ -43,6 +43,24 @@
 	/* ------------------------------------------------------------------ */
 	var PORTRAIT_WIDTH = 640;
 	var LANDSCAPE_WIDTH = 1024;
+	// User-adjustable UI size (per device, not part of the save).
+	var ZOOM_KEY = "__tom_zoom";
+	var ZOOM_LEVELS = [0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.35, 1.5];
+
+	function getZoom() {
+		var z = parseFloat(window.localStorage.getItem(ZOOM_KEY));
+		return ZOOM_LEVELS.indexOf(z) >= 0 ? z : 1;
+	}
+	function setZoom(z) {
+		window.localStorage.setItem(ZOOM_KEY, String(z));
+		applyViewport();
+	}
+	function stepZoom(dir) {
+		var i = ZOOM_LEVELS.indexOf(getZoom()) + dir;
+		i = Math.max(0, Math.min(ZOOM_LEVELS.length - 1, i));
+		setZoom(ZOOM_LEVELS[i]);
+		return ZOOM_LEVELS[i];
+	}
 
 	function applyViewport() {
 		var meta = document.querySelector('meta[name="viewport"]');
@@ -53,11 +71,19 @@
 		}
 		var shortSide = Math.min(screen.width, screen.height);
 		var landscape = window.matchMedia("(orientation: landscape)").matches;
-		var width = "device-width";
-		// Phones only; iPads are wide enough for the native layout.
-		if (shortSide < 600) width = String(landscape ? LANDSCAPE_WIDTH : PORTRAIT_WIDTH);
-		var content = "width=" + width + ", viewport-fit=cover, user-scalable=no";
-		if (width === "device-width") content += ", initial-scale=1, maximum-scale=1";
+		var zoom = getZoom();
+		var content;
+		if (shortSide < 600) {
+			// Phones: lay the desktop UI out wider than the screen and let
+			// WebKit scale it to fit. Higher zoom = narrower layout = bigger UI.
+			var base = landscape ? LANDSCAPE_WIDTH : PORTRAIT_WIDTH;
+			content = "width=" + Math.round(base / zoom) + ", viewport-fit=cover, user-scalable=no";
+		} else {
+			// iPad: native width, scaled by the zoom factor.
+			content =
+				"width=device-width, initial-scale=" + zoom + ", minimum-scale=" + zoom + ", maximum-scale=" + zoom +
+				", viewport-fit=cover, user-scalable=no";
+		}
 		if (meta.getAttribute("content") !== content) meta.setAttribute("content", content);
 	}
 	applyViewport();
@@ -437,10 +463,21 @@
 		panel.id = "tom-save-panel";
 		panel.hidden = true;
 		panel.innerHTML =
+			'<div class="tom-title">Display size</div>' +
+			'<div class="tom-zoom">' +
+			'<button type="button" data-act="zoom-out" aria-label="Smaller">A&minus;</button>' +
+			'<span class="tom-zoom-val"></span>' +
+			'<button type="button" data-act="zoom-in" aria-label="Bigger">A+</button>' +
+			"</div>" +
 			'<div class="tom-title">Save backup</div>' +
 			'<button type="button" data-act="export">Export save (copy)</button>' +
 			'<button type="button" data-act="import">Import save (paste)</button>' +
 			'<div class="tom-hint">Saves are also mirrored to the device automatically.</div>';
+		var zoomVal = panel.querySelector(".tom-zoom-val");
+		function showZoom() {
+			zoomVal.textContent = Math.round(getZoom() * 100) + "%";
+		}
+		showZoom();
 
 		fab.addEventListener("click", function (e) {
 			e.stopPropagation();
@@ -452,6 +489,11 @@
 		panel.addEventListener("click", function (e) {
 			var act = e.target && e.target.getAttribute && e.target.getAttribute("data-act");
 			if (!act) return;
+			if (act === "zoom-in" || act === "zoom-out") {
+				stepZoom(act === "zoom-in" ? 1 : -1);
+				showZoom();
+				return; // keep the panel open while adjusting
+			}
 			panel.hidden = true;
 			if (act === "export") {
 				exportSave().then(

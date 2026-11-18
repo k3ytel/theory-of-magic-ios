@@ -83,6 +83,20 @@ textarea,
 	background: #3a3150;
 	color: #fff;
 }
+#tom-save-panel .tom-zoom {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+#tom-save-panel .tom-zoom button {
+	flex: 1;
+	font-weight: 700;
+}
+#tom-save-panel .tom-zoom-val {
+	min-width: 48px;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
 #tom-save-panel .tom-hint {
 	font-size: 11px;
 	opacity: 0.7;
