@@ -1,0 +1,109 @@
+/* Theory of Magic – iOS native feel. Safe areas are handled natively (the
+   web view is pinned to the safe area), so no env() padding is needed here. */
+html,
+body {
+	overscroll-behavior: none;
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	touch-action: manipulation;
+}
+
+/* Only the root: body keeps the game's light/dark theme background. */
+html {
+	background-color: #1a1a1a;
+}
+
+body {
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+input,
+textarea,
+[contenteditable] {
+	-webkit-user-select: text;
+	user-select: text;
+}
+
+#tom-save-fab {
+	position: fixed;
+	right: 10px;
+	bottom: 10px;
+	z-index: 100000;
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	border-radius: 20px;
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	background: rgba(40, 30, 70, 0.85);
+	color: #e8d9a8;
+	font-size: 22px;
+	line-height: 38px;
+	text-align: center;
+	opacity: 0.7;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+#tom-save-fab:active {
+	opacity: 1;
+}
+
+#tom-save-panel {
+	position: fixed;
+	right: 10px;
+	bottom: 58px;
+	z-index: 100000;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	width: 230px;
+	padding: 12px;
+	border-radius: 10px;
+	background: #262033;
+	color: #eee;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+	font-family: "Open Sans", sans-serif;
+	font-size: 14px;
+}
+#tom-save-panel[hidden] {
+	display: none;
+}
+#tom-save-panel .tom-title {
+	font-weight: 700;
+	color: #e8d9a8;
+}
+#tom-save-panel button {
+	width: 100%;
+	padding: 10px;
+	font-size: 14px;
+	border-radius: 6px;
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	background: #3a3150;
+	color: #fff;
+}
+#tom-save-panel .tom-hint {
+	font-size: 11px;
+	opacity: 0.7;
+}
+
+.tom-toast {
+	position: fixed;
+	left: 50%;
+	bottom: 64px;
+	transform: translateX(-50%);
+	z-index: 100001;
+	max-width: 80%;
+	padding: 10px 16px;
+	border-radius: 8px;
+	background: rgba(20, 60, 30, 0.95);
+	color: #fff;
+	font-family: "Open Sans", sans-serif;
+	font-size: 14px;
+	text-align: center;
+	pointer-events: none;
+}
+.tom-toast.tom-error {
+	background: rgba(110, 20, 20, 0.95);
+}

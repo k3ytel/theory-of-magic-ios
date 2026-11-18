@@ -1,0 +1,4 @@
+[submodule "arcanum"]
+	path = arcanum
+	url = https://gitlab.com/mathiashjelm/arcanum.git
+	shallow = true

@@ -1,0 +1,93 @@
+name: Build unsigned iOS app
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - name: Checkout (with pinned Arcanum submodule)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            arcanum.package-lock.json
+
+      - name: Install wrapper dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build offline web bundle (www/)
+        run: npm run build:web
+
+      - name: Offline check (http/https references in www/)
+        run: npm run check:offline
+
+      - name: Capacitor sync
+        run: npx cap sync ios
+
+      - name: Show Xcode / schemes
+        run: |
+          xcodebuild -version
+          xcodebuild -list -project ios/App/App.xcodeproj
+
+      - name: Build App.app (no code signing)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DerivedData \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            build | tee build/xcodebuild.log | grep -E "error:|warning: .*Capacitor|\*\* BUILD" || true
+          test -d build/DerivedData/Build/Products/Release-iphoneos/App.app
+
+      - name: Package .ipa (Payload/App.app)
+        run: |
+          APP=build/DerivedData/Build/Products/Release-iphoneos/App.app
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP/Info.plist"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP/Info.plist"
+          ls "$APP/public"
+          rm -rf build/ipa && mkdir -p build/ipa/Payload
+          cp -R "$APP" build/ipa/Payload/App.app
+          (cd build/ipa && zip -qry ../../TheoryOfMagic-unsigned.ipa Payload)
+          ls -lh TheoryOfMagic-unsigned.ipa
+
+      - name: Upload .ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: TheoryOfMagic-unsigned-ipa
+          path: TheoryOfMagic-unsigned.ipa
+          if-no-files-found: error
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: build/xcodebuild.log
+          if-no-files-found: ignore

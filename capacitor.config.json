@@ -1,0 +1,13 @@
+{
+  "appId": "com.k3ytel.theoryofmagic",
+  "appName": "Theory of Magic",
+  "webDir": "www",
+  "backgroundColor": "#1a1a1a",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#1a1a1a",
+    "scrollEnabled": false,
+    "allowsLinkPreview": false,
+    "limitsNavigationsToAppBoundDomains": false
+  }
+}
